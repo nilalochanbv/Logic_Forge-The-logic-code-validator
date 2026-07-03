@@ -1,148 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, User, Terminal, Sparkles, Globe, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import InteractiveMascot from './InteractiveMascot';
 
-// --- Animated LogicBot Mascot Component ---
-function RobotMascot({ isPasswordFocused, activeFieldName, textLength }) {
-  // Eyelid blink animation loop
-  const blinkAnimation = {
-    scaleY: [1, 1, 0.05, 1, 1],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      repeatDelay: 2,
-      ease: "easeInOut"
-    }
-  };
-
-  // Calculate pupil offset to track typing position
-  let pupilX = 0;
-  let pupilY = 0;
-
-  if (activeFieldName === 'email' || activeFieldName === 'username') {
-    // Look down slightly towards the input box
-    pupilY = 3;
-    // Look left-to-right as text length changes
-    pupilX = Math.min(6, Math.max(-6, (textLength - 15) * 0.4));
-  }
-
-  return (
-    <div className="w-full flex justify-center mb-6 h-[110px] select-none pointer-events-none">
-      <svg width="180" height="110" viewBox="0 0 180 110" className="drop-shadow-[0_0_15px_rgba(59,130,246,0.15)]">
-        {/* Antenna */}
-        <line x1="90" y1="40" x2="90" y2="18" stroke="#3f3f46" strokeWidth="4" />
-        <motion.circle 
-          cx="90" 
-          cy="12" 
-          r="6" 
-          fill="#3b82f6" 
-          animate={isPasswordFocused ? { fill: "#a855f7", scale: [1, 1.2, 1] } : { fill: "#3b82f6", scale: 1 }}
-          transition={isPasswordFocused ? { repeat: Infinity, duration: 1.5 } : {}}
-        />
-
-        {/* Ears */}
-        <rect x="35" y="55" width="10" height="25" rx="3" fill="#27272a" stroke="#3f3f46" strokeWidth="2" />
-        <rect x="135" y="55" width="10" height="25" rx="3" fill="#27272a" stroke="#3f3f46" strokeWidth="2" />
-
-        {/* Robot Head Casing */}
-        <rect x="42" y="38" width="96" height="64" rx="16" fill="#18181b" stroke="#3f3f46" strokeWidth="3.5" />
-        
-        {/* Eye Display Panel (Inner glass) */}
-        <rect x="52" y="48" width="76" height="42" rx="8" fill="#09090b" stroke="#27272a" strokeWidth="2" />
-
-        {/* Eyes (Glowing LEDs) */}
-        <g>
-          {isPasswordFocused ? (
-            // Closed/Shy Eyes when covering (Arc Paths)
-            <>
-              <path d="M 64 68 Q 70 60 76 68" stroke="#3b82f6" strokeWidth="3" fill="none" strokeLinecap="round" />
-              <path d="M 104 68 Q 110 60 116 68" stroke="#3b82f6" strokeWidth="3" fill="none" strokeLinecap="round" />
-            </>
-          ) : (
-            // Active Blinking Eyes with Pupils
-            <>
-              {/* Left Eye LED */}
-              <mask id="left-eye-mask">
-                <rect x="55" y="50" width="30" height="30" fill="white" />
-              </mask>
-              <motion.ellipse 
-                cx="70" 
-                cy="66" 
-                rx="9" 
-                ry="9" 
-                fill="#3b82f6" 
-                fillOpacity="0.25"
-                animate={blinkAnimation}
-                style={{ originY: "66px" }}
-              />
-              <motion.circle 
-                cx={70 + pupilX} 
-                cy={66 + pupilY} 
-                r="4.5" 
-                fill="#60a5fa" 
-                animate={blinkAnimation}
-                style={{ originY: "66px" }}
-              />
-
-              {/* Right Eye LED */}
-              <motion.ellipse 
-                cx="110" 
-                cy="66" 
-                rx="9" 
-                ry="9" 
-                fill="#3b82f6" 
-                fillOpacity="0.25"
-                animate={blinkAnimation}
-                style={{ originY: "66px" }}
-              />
-              <motion.circle 
-                cx={110 + pupilX} 
-                cy={66 + pupilY} 
-                r="4.5" 
-                fill="#60a5fa" 
-                animate={blinkAnimation}
-                style={{ originY: "66px" }}
-              />
-            </>
-          )}
-        </g>
-
-        {/* Cute Mouth LED */}
-        <line x1="82" y1="80" x2="98" y2="80" stroke={isPasswordFocused ? "#a855f7" : "#3b82f6"} strokeWidth="2.5" strokeLinecap="round" className="opacity-80" />
-
-        {/* Left Metallic Arm (Peek-a-boo) */}
-        <motion.g
-          animate={isPasswordFocused ? { y: -38, x: 26, rotate: 32 } : { y: 0, x: 0, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 130, damping: 15 }}
-          style={{ originX: "24px", originY: "98px" }}
-        >
-          {/* Shoulder/Joint */}
-          <circle cx="24" cy="98" r="6" fill="#3f3f46" />
-          {/* Arm segments */}
-          <path d="M 24 98 Q 16 80 34 76" stroke="#27272a" strokeWidth="7.5" strokeLinecap="round" fill="none" />
-          {/* Hand joint */}
-          <circle cx="34" cy="76" r="8" fill="#52525b" stroke="#3f3f46" strokeWidth="2" />
-        </motion.g>
-
-        {/* Right Metallic Arm (Peek-a-boo) */}
-        <motion.g
-          animate={isPasswordFocused ? { y: -38, x: -26, rotate: -32 } : { y: 0, x: 0, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 130, damping: 15 }}
-          style={{ originX: "156px", originY: "98px" }}
-        >
-          {/* Shoulder/Joint */}
-          <circle cx="156" cy="98" r="6" fill="#3f3f46" />
-          {/* Arm segments */}
-          <path d="M 156 98 Q 164 80 146 76" stroke="#27272a" strokeWidth="7.5" strokeLinecap="round" fill="none" />
-          {/* Hand joint */}
-          <circle cx="146" cy="76" r="8" fill="#52525b" stroke="#3f3f46" strokeWidth="2" />
-        </motion.g>
-      </svg>
-    </div>
-  );
-}
-
-// --- Main Login Component ---
 export default function Login({ onLoginSuccess, apiUrl }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -153,9 +13,25 @@ export default function Login({ onLoginSuccess, apiUrl }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // States to track Mascot interaction
+  // States to track Mascot interactions
   const [activeFieldName, setActiveFieldName] = useState('');
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [mascotState, setMascotState] = useState('idle');
+
+  // Sync mascot state machine
+  useEffect(() => {
+    if (loading) {
+      setMascotState('happy');
+    } else if (error) {
+      setMascotState('confused');
+    } else if (isPasswordFocused) {
+      setMascotState('coverEyes');
+    } else if (activeFieldName === 'email' || activeFieldName === 'username') {
+      setMascotState('lookAtInput');
+    } else {
+      setMascotState('idle');
+    }
+  }, [activeFieldName, isPasswordFocused, loading, error]);
 
   // Handle Google Credential Response (Google Sign-In Callback)
   const handleCredentialResponse = async (response) => {
@@ -300,33 +176,100 @@ export default function Login({ onLoginSuccess, apiUrl }) {
   return (
     <div className="relative w-screen h-screen flex overflow-hidden bg-[#09090b] font-sans">
       
-      {/* LEFT SIDE: Large Promo Text Block (Visible only on md/lg screens) */}
-      <div className="hidden md:flex md:w-[55%] h-full bg-[#f8f9fa] flex-col justify-center px-16 xl:px-24 relative select-none">
+      {/* LEFT SIDE: Large Promo Text Block & Mascot (Visible only on md/lg screens) */}
+      <div className="hidden md:flex md:w-[55%] h-full bg-[#f8f9fa] flex-col justify-center px-12 xl:px-20 relative select-none">
         {/* Background Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-60 pointer-events-none" />
         
-        <div className="z-10 max-w-lg">
-          <motion.div 
-            initial={{ opacity: 0, x: -35 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex flex-col"
-          >
-            {/* Logo and Brand Title */}
-            <h1 className="text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-zinc-950 mb-4 flex flex-col">
-              <span className="text-blue-600">Logic</span>
-              <span>Forge</span>
-            </h1>
-            <div className="h-[4px] w-20 bg-blue-600 mb-8 rounded-full" />
+        {/* Content Container divided into left text, right mascot */}
+        <div className="z-10 w-full flex flex-row items-center justify-between gap-6">
+          {/* Text Area */}
+          <div className="w-[45%] flex flex-col">
+            <motion.div 
+              initial={{ opacity: 0, x: -35 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="flex flex-col"
+            >
+              {/* Logo and Brand Title */}
+              <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-zinc-950 mb-4 flex flex-col">
+                <span className="text-blue-600">Logic</span>
+                <span>Forge</span>
+              </h1>
+              <div className="h-[4px] w-20 bg-blue-600 mb-8 rounded-full" />
 
-            <p className="text-zinc-500 text-sm lg:text-base leading-relaxed font-medium">
-              Master programming logic without syntax constraints. Solve step-by-step interactive puzzles to build strong algorithmic thinking.
-            </p>
-          </motion.div>
+              <p className="text-zinc-500 text-xs lg:text-sm leading-relaxed font-medium">
+                Master programming logic without syntax constraints. Solve step-by-step interactive puzzles to build strong algorithmic thinking.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Interactive Mascot Area */}
+          <div className="w-[55%] flex justify-center items-center relative">
+            {/* Visual State Help Annotation */}
+            <AnimatePresence mode="wait">
+              {mascotState === 'idle' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute -top-6 text-[11px] font-bold text-zinc-400 bg-zinc-100 px-3 py-1 rounded-full border border-zinc-200 shadow-sm"
+                >
+                  Looking around...
+                </motion.div>
+              )}
+              {mascotState === 'lookAtInput' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute -top-6 text-[11px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shadow-sm"
+                >
+                  Looking at {activeFieldName} box
+                </motion.div>
+              )}
+              {mascotState === 'coverEyes' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute -top-6 text-[11px] font-bold text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 shadow-sm animate-pulse"
+                >
+                  Closing eyes for password
+                </motion.div>
+              )}
+              {mascotState === 'confused' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute -top-6 text-[11px] font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100 shadow-sm"
+                >
+                  Something went wrong
+                </motion.div>
+              )}
+              {mascotState === 'happy' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute -top-6 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 shadow-sm"
+                >
+                  Processing request!
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <InteractiveMascot 
+              state={mascotState} 
+              textLength={getActiveTextLength()} 
+              activeField={activeFieldName} 
+            />
+          </div>
         </div>
 
         {/* Branding Terminal Tag */}
-        <div className="absolute bottom-10 left-16 xl:left-24 text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
+        <div className="absolute bottom-10 left-12 xl:left-20 text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
           <Terminal size={14} className="text-blue-600" />
           LOGICFORGE SYSTEM V2.0
         </div>
@@ -356,13 +299,6 @@ export default function Login({ onLoginSuccess, apiUrl }) {
             transition={{ duration: 0.5 }}
             className="w-full bg-[#161616]/40 backdrop-blur-xl border border-white/5 p-8 rounded-2xl shadow-2xl flex flex-col items-center"
           >
-            {/* LogicBot Interactive Mascot */}
-            <RobotMascot 
-              isPasswordFocused={isPasswordFocused} 
-              activeFieldName={activeFieldName}
-              textLength={getActiveTextLength()}
-            />
-
             {/* Greeting */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Hello!</h2>
@@ -389,7 +325,10 @@ export default function Login({ onLoginSuccess, apiUrl }) {
                       type="text" 
                       placeholder="Username" 
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={(e) => {
+                        setUsername(e.target.value);
+                        setError(null); // Clear errors to reset mascotState
+                      }}
                       onFocus={() => {
                         setActiveFieldName('username');
                         setIsPasswordFocused(false);
@@ -407,7 +346,10 @@ export default function Login({ onLoginSuccess, apiUrl }) {
                   type="email" 
                   placeholder="Email" 
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
                   onFocus={() => {
                     setActiveFieldName('email');
                     setIsPasswordFocused(false);
@@ -423,7 +365,10 @@ export default function Login({ onLoginSuccess, apiUrl }) {
                   type={showPassword ? "text" : "password"} 
                   placeholder="Password" 
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
                   onFocus={() => {
                     setIsPasswordFocused(true);
                     setActiveFieldName('');
@@ -495,7 +440,10 @@ export default function Login({ onLoginSuccess, apiUrl }) {
 
             {/* Swap Sign In/Sign Up */}
             <button 
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError(null); // Clear errors
+              }}
               className="text-[10px] text-zinc-500 hover:text-blue-400 font-bold tracking-widest transition-colors duration-200 mt-4 uppercase"
             >
               {isSignUp ? 'Already registered? Sign in' : 'Create an Account'}
