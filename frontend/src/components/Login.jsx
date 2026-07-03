@@ -176,100 +176,33 @@ export default function Login({ onLoginSuccess, apiUrl }) {
   return (
     <div className="relative w-screen h-screen flex overflow-hidden bg-[#09090b] font-sans">
       
-      {/* LEFT SIDE: Large Promo Text Block & Mascot (Visible only on md/lg screens) */}
-      <div className="hidden md:flex md:w-[55%] h-full bg-[#f8f9fa] flex-col justify-center px-12 xl:px-20 relative select-none">
+      {/* LEFT SIDE: Large Promo Text Block (Visible only on md/lg screens) */}
+      <div className="hidden md:flex md:w-[55%] h-full bg-[#f8f9fa] flex-col justify-center px-16 xl:px-24 relative select-none">
         {/* Background Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-60 pointer-events-none" />
         
-        {/* Content Container divided into left text, right mascot */}
-        <div className="z-10 w-full flex flex-row items-center justify-between gap-6">
-          {/* Text Area */}
-          <div className="w-[45%] flex flex-col">
-            <motion.div 
-              initial={{ opacity: 0, x: -35 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="flex flex-col"
-            >
-              {/* Logo and Brand Title */}
-              <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-zinc-950 mb-4 flex flex-col">
-                <span className="text-blue-600">Logic</span>
-                <span>Forge</span>
-              </h1>
-              <div className="h-[4px] w-20 bg-blue-600 mb-8 rounded-full" />
+        <div className="z-10 max-w-lg">
+          <motion.div 
+            initial={{ opacity: 0, x: -35 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col"
+          >
+            {/* Logo and Brand Title */}
+            <h1 className="text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-zinc-950 mb-4 flex flex-col">
+              <span className="text-blue-600">Logic</span>
+              <span>Forge</span>
+            </h1>
+            <div className="h-[4px] w-20 bg-blue-600 mb-8 rounded-full" />
 
-              <p className="text-zinc-500 text-xs lg:text-sm leading-relaxed font-medium">
-                Master programming logic without syntax constraints. Solve step-by-step interactive puzzles to build strong algorithmic thinking.
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Interactive Mascot Area */}
-          <div className="w-[55%] flex justify-center items-center relative">
-            {/* Visual State Help Annotation */}
-            <AnimatePresence mode="wait">
-              {mascotState === 'idle' && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute -top-6 text-[11px] font-bold text-zinc-400 bg-zinc-100 px-3 py-1 rounded-full border border-zinc-200 shadow-sm"
-                >
-                  Looking around...
-                </motion.div>
-              )}
-              {mascotState === 'lookAtInput' && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute -top-6 text-[11px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shadow-sm"
-                >
-                  Looking at {activeFieldName} box
-                </motion.div>
-              )}
-              {mascotState === 'coverEyes' && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute -top-6 text-[11px] font-bold text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 shadow-sm animate-pulse"
-                >
-                  Closing eyes for password
-                </motion.div>
-              )}
-              {mascotState === 'confused' && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute -top-6 text-[11px] font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100 shadow-sm"
-                >
-                  Something went wrong
-                </motion.div>
-              )}
-              {mascotState === 'happy' && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute -top-6 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 shadow-sm"
-                >
-                  Processing request!
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <InteractiveMascot 
-              state={mascotState} 
-              textLength={getActiveTextLength()} 
-              activeField={activeFieldName} 
-            />
-          </div>
+            <p className="text-zinc-500 text-sm lg:text-base leading-relaxed font-medium">
+              Master programming logic without syntax constraints. Solve step-by-step interactive puzzles to build strong algorithmic thinking.
+            </p>
+          </motion.div>
         </div>
 
         {/* Branding Terminal Tag */}
-        <div className="absolute bottom-10 left-12 xl:left-20 text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
+        <div className="absolute bottom-10 left-16 xl:left-24 text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
           <Terminal size={14} className="text-blue-600" />
           LOGICFORGE SYSTEM V2.0
         </div>
@@ -299,6 +232,13 @@ export default function Login({ onLoginSuccess, apiUrl }) {
             transition={{ duration: 0.5 }}
             className="w-full bg-[#161616]/40 backdrop-blur-xl border border-white/5 p-8 rounded-2xl shadow-2xl flex flex-col items-center"
           >
+            {/* Mascot replaces ONLY the robot illustration above "Hello!" */}
+            <InteractiveMascot 
+              state={mascotState} 
+              textLength={getActiveTextLength()} 
+              activeField={activeFieldName} 
+            />
+
             {/* Greeting */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Hello!</h2>
@@ -327,7 +267,7 @@ export default function Login({ onLoginSuccess, apiUrl }) {
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value);
-                        setError(null); // Clear errors to reset mascotState
+                        setError(null);
                       }}
                       onFocus={() => {
                         setActiveFieldName('username');
@@ -442,7 +382,7 @@ export default function Login({ onLoginSuccess, apiUrl }) {
             <button 
               onClick={() => {
                 setIsSignUp(!isSignUp);
-                setError(null); // Clear errors
+                setError(null);
               }}
               className="text-[10px] text-zinc-500 hover:text-blue-400 font-bold tracking-widest transition-colors duration-200 mt-4 uppercase"
             >
