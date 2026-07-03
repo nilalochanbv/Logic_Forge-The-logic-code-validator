@@ -9,7 +9,11 @@ import AdminPanel from './components/AdminPanel';
 import { Shield, User as UserIcon, BarChart2, Award, Layout, LogOut, MessageSquare, Send, X, Mic, Paperclip } from 'lucide-react';
 import robotAvatar from './assets/robot.png';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || (
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://logic-forge-the-logic-code-validator.onrender.com/api'
+);
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
