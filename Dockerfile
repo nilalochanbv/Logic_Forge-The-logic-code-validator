@@ -3,7 +3,7 @@
 # ==================================================
 
 # --- Stage 1: Build Java Project ---
-FROM maven:3.8.8-openjdk-17-slim AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy dependency definition and source code from backend folder
@@ -14,7 +14,7 @@ COPY backend/src ./backend/src
 RUN mvn clean package -DskipTests -f backend/pom.xml
 
 # --- Stage 2: Runtime JVM Container ---
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # Copy compiled jar package from the build image

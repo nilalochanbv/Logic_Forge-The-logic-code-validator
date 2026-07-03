@@ -3,7 +3,7 @@
 # ==========================================
 
 # --- Stage 1: Build the Application JAR ---
-FROM maven:3.8.8-openjdk-17-slim AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy POM and dependencies mappings
@@ -14,7 +14,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # --- Stage 2: Runtime Environment ---
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # Copy the generated JAR from the build container
