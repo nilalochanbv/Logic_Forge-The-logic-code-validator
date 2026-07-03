@@ -1,0 +1,11 @@
+{
+  "name": "logicforge-workspace",
+  "version": "1.0.0",
+  "description": "LogicForge workspace root",
+  "scripts": {
+    "install:all": "npm install --prefix frontend",
+    "backend": "run_backend.cmd",
+    "frontend": "npm run dev --prefix frontend",
+    "dev": "npx concurrently \"npm run backend\" \"npm run frontend\""
+  }
+}

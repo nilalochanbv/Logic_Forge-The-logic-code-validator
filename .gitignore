@@ -1,0 +1,49 @@
+# ==========================================
+# LogicForge Root .gitignore Configuration
+# ==========================================
+
+# --- Sensitive Keys & Configuration ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Local Databases & Data Stores ---
+**/data/db_fallback.json
+**/data/*.json
+**/*.db
+**/*.log
+
+# --- Java & Maven Build Outputs ---
+**/target/
+**/target/*
+*.class
+*.bluej
+*.jgr
+*.jar
+*.war
+*.ear
+*.nar
+*.class
+*.db
+
+# --- Node.js & React Frontend ---
+**/node_modules/
+**/dist/
+**/.eslintcache
+**/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- IDEs & System Files ---
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
