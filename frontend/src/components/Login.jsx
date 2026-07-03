@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Lock, User, Terminal, Sparkles, Globe, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import InteractiveMascot from './InteractiveMascot';
 
 export default function Login({ onLoginSuccess, apiUrl }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -232,13 +231,6 @@ export default function Login({ onLoginSuccess, apiUrl }) {
             transition={{ duration: 0.5 }}
             className="w-full bg-[#161616]/40 backdrop-blur-xl border border-white/5 p-8 rounded-2xl shadow-2xl flex flex-col items-center"
           >
-            {/* Mascot replaces ONLY the robot illustration above "Hello!" */}
-            <InteractiveMascot 
-              state={mascotState} 
-              textLength={getActiveTextLength()} 
-              activeField={activeFieldName} 
-            />
-
             {/* Greeting */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Hello!</h2>
