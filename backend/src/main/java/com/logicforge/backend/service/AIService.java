@@ -17,14 +17,12 @@ import java.util.regex.Pattern;
 @Service
 public class AIService {
 
-    @Value("${OPENAI_API_KEY:}")
+    @Value("${GEMINI_API_KEY:}")
     private String apiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private boolean isApiAvailable = false;
-
-    private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
     private static final String SYSTEM_PROMPT = 
         "You are the LogicForge AI Logic Evaluator. Your role is to analyze a user's step-by-step logical reasoning to solve a computational logic problem.\n" +
@@ -70,9 +68,51 @@ public class AIService {
     public void init() {
         if (apiKey != null && !apiKey.trim().isEmpty()) {
             isApiAvailable = true;
-            System.out.println("OpenAI API client initialized.");
+            System.out.println("Gemini API client initialized.");
         } else {
-            System.out.println("No OPENAI_API_KEY found. AI Evaluator will run in Local Heuristic Fallback mode.");
+            System.out.println("No GEMINI_API_KEY found. AI Evaluator will run in Local Heuristic Fallback mode.");
+        }
+    }
+
+    private String callGemini(String systemInstruction, String userPrompt, boolean jsonMode, double temperature) {
+        try {
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+
+            // System Instruction
+            Map<String, Object> systemPart = Map.of("text", systemInstruction);
+            Map<String, Object> systemInstructionMap = Map.of("parts", List.of(systemPart));
+
+            // User Prompt
+            Map<String, Object> userPart = Map.of("text", userPrompt);
+            Map<String, Object> contentMap = Map.of(
+                "role", "user",
+                "parts", List.of(userPart)
+            );
+
+            // Request body
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("contents", List.of(contentMap));
+            requestBody.put("systemInstruction", systemInstructionMap);
+
+            // Generation config
+            Map<String, Object> generationConfig = new HashMap<>();
+            generationConfig.put("temperature", temperature);
+            if (jsonMode) {
+                generationConfig.put("responseMimeType", "application/json");
+            }
+            requestBody.put("generationConfig", generationConfig);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            String response = restTemplate.postForObject(url, entity, String.class);
+
+            JsonNode rootNode = objectMapper.readTree(response);
+            return rootNode.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
+        } catch (Exception e) {
+            System.err.println("Gemini API call failed: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -106,39 +146,16 @@ public class AIService {
         }
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(apiKey);
-
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "gpt-3.5-turbo");
-            
-            Map<String, String> responseFormat = new HashMap<>();
-            responseFormat.put("type", "json_object");
-            requestBody.put("response_format", responseFormat);
-
-            List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of("role", "system", "content", SYSTEM_PROMPT));
-            
             StringBuilder userPrompt = new StringBuilder();
             userPrompt.append("Problem Title: \"").append(questionTitle).append("\"\nUser's Submitted Logic Steps:\n");
             for (int i = 0; i < steps.size(); i++) {
                 userPrompt.append("Step ").append(i + 1).append(": ").append(steps.get(i)).append("\n");
             }
-            messages.add(Map.of("role", "user", "content", userPrompt.toString()));
-            
-            requestBody.put("messages", messages);
-            requestBody.put("temperature", 0.2);
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            String response = restTemplate.postForObject(OPENAI_URL, entity, String.class);
-
-            JsonNode rootNode = objectMapper.readTree(response);
-            String content = rootNode.path("choices").get(0).path("message").path("content").asText();
-            
+            String content = callGemini(SYSTEM_PROMPT, userPrompt.toString(), true, 0.2);
             return objectMapper.readValue(content, new TypeReference<Map<String, Object>>(){});
         } catch (Exception e) {
-            System.err.println("OpenAI API evaluation failed, falling back to local heuristic. Error: " + e.getMessage());
+            System.err.println("Gemini API evaluation failed, falling back to local heuristic. Error: " + e.getMessage());
             return localEvaluateLogic(questionTitle, steps);
         }
     }
@@ -159,15 +176,7 @@ public class AIService {
         }
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(apiKey);
-
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "gpt-3.5-turbo");
-
-            List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of("role", "system", "content", 
+            String mentorSystemPrompt = 
                 "You are the LogicForge AI Mentor. \n" +
                 "Your goal is to guide beginner programmers to develop their logical thinking skills.\n" +
                 "CRITICAL RULES:\n" +
@@ -175,7 +184,7 @@ public class AIService {
                 "2. NEVER suggest programming syntax or variable declarations like 'int a'. Instead suggest concepts like 'a place to store a number'.\n" +
                 "3. NEVER reveal the complete solution.\n" +
                 "4. Keep answers brief (max 3 sentences) and highly encouraging.\n" +
-                "5. Guide the user by asking leading questions.\n"));
+                "5. Guide the user by asking leading questions.\n";
 
             StringBuilder userPrompt = new StringBuilder();
             userPrompt.append("Problem: ").append(questionTitle)
@@ -183,18 +192,9 @@ public class AIService {
                       .append("\nChat History: ").append(objectMapper.writeValueAsString(chatHistory))
                       .append("\nUser Question: \"").append(userQuestion).append("\"");
 
-            messages.add(Map.of("role", "user", "content", userPrompt.toString()));
-            requestBody.put("messages", messages);
-            requestBody.put("temperature", 0.7);
-            requestBody.put("max_tokens", 150);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            String response = restTemplate.postForObject(OPENAI_URL, entity, String.class);
-
-            JsonNode rootNode = objectMapper.readTree(response);
-            return rootNode.path("choices").get(0).path("message").path("content").asText().trim();
+            return callGemini(mentorSystemPrompt, userPrompt.toString(), false, 0.7);
         } catch (Exception e) {
-            System.err.println("OpenAI Mentor API failed, falling back. Error: " + e.getMessage());
+            System.err.println("Gemini Mentor API failed, falling back. Error: " + e.getMessage());
             return "Think about the input values needed for this problem, and what logical check you need to do on them next. What do you think is your first step?";
         }
     }
@@ -218,8 +218,8 @@ public class AIService {
 
         // Stats inquiry check
         boolean asksStats = lowercaseMsg.contains("progress") || lowercaseMsg.contains("solved") || 
-                            lowercaseMsg.contains("my streak") || lowercaseMsg.contains("my badge") || 
-                            lowercaseMsg.contains("points") || lowercaseMsg.contains("how many question");
+                              lowercaseMsg.contains("my streak") || lowercaseMsg.contains("my badge") || 
+                              lowercaseMsg.contains("points") || lowercaseMsg.contains("how many question");
         if (asksStats) {
             Object solvedCount = userStats.get("solvedCount");
             int solvedTotal = solvedCount != null ? ((Number) solvedCount).intValue() : 0;
@@ -249,35 +249,17 @@ public class AIService {
         }
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(apiKey);
-
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "gpt-3.5-turbo");
-
-            List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of("role", "system", "content", LOGICBOT_SYSTEM_PROMPT));
-
+            StringBuilder userPrompt = new StringBuilder();
+            userPrompt.append("User Stats: ").append(objectMapper.writeValueAsString(userStats)).append("\n");
+            userPrompt.append("Chat History:\n");
             for (Map<String, String> h : chatHistory) {
-                messages.add(Map.of(
-                    "role", h.get("sender").equals("user") ? "user" : "assistant",
-                    "content", h.get("text")
-                ));
+                userPrompt.append(h.get("sender").equals("user") ? "User" : "Assistant").append(": ").append(h.get("text")).append("\n");
             }
+            userPrompt.append("User Input Message: \"").append(userMessage).append("\"");
 
-            messages.add(Map.of("role", "user", "content", "User Stats: " + objectMapper.writeValueAsString(userStats) + "\nUser Input: \"" + userMessage + "\""));
-            requestBody.put("messages", messages);
-            requestBody.put("temperature", 0.6);
-            requestBody.put("max_tokens", 250);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            String response = restTemplate.postForObject(OPENAI_URL, entity, String.class);
-
-            JsonNode rootNode = objectMapper.readTree(response);
-            return rootNode.path("choices").get(0).path("message").path("content").asText().trim();
+            return callGemini(LOGICBOT_SYSTEM_PROMPT, userPrompt.toString(), false, 0.6);
         } catch (Exception e) {
-            System.err.println("OpenAI Bot failed, falling back. Error: " + e.getMessage());
+            System.err.println("Gemini Bot failed, falling back. Error: " + e.getMessage());
             if (isNumberedList) {
                 return "Logic Analysis\n\nCorrectness: 80%\n\nStrengths:\n✓ Clean sequence ordering\n\nImprovements:\n⚠ Storage allocation unclear\n\nLogic Rating:\n★★★★☆";
             }
