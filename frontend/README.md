@@ -1,16 +1,13 @@
-# React + Vite
+# LogicForge Frontend Client 🎨
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the React + Vite frontend client for LogicForge.
 
-Currently, two official plugins are available:
+## 🛠️ Port Configuration
+The development server is configured to run strictly on port `5174` inside `vite.config.js` to align with the Google OAuth Authorized JavaScript Origins:
+*   Local URL: `http://localhost:5174`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📦 Key Libraries
+*   **Animations**: `framer-motion` (used for glassmorphism auroras, floating particles, and slide-in transition states)
+*   **Icons**: `lucide-react`
+*   **Charts**: `recharts`
+*   **Styling**: Tailwind CSS

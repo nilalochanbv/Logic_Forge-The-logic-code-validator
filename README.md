@@ -11,40 +11,55 @@ An AI-powered logic building sandbox designed to help beginner programmers culti
 
 ---
 
-## 🚀 Quick Start Instructions
+## 🚀 Local Development Guide
 
 Follow these quick commands to spin up the local development suite:
 
-### 1. Installation
-In the project root workspace directory, install both client and server packages:
-```bash
-npm run install:all
-```
-
-### 2. Configure Environment Variables
-Inside the `/backend` folder, copy or update the `.env` configuration:
+### 1. Configure Backend Environment
+Inside the `backend/.env` file, configure your settings:
 ```env
 PORT=5000
-MONGODB_URI=your-mongodb-connection-string
-OPENAI_API_KEY=your-openai-api-key
-JWT_SECRET=any-random-string-token
+MONGODB_URI=mongodb://localhost:27017/logicforge
+JWT_SECRET=logicforge_secret_key_1337
+GEMINI_API_KEY=your-gemini-api-key
+REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
-> [!NOTE]
-> **NO MONGO? NO OPENAI KEY? NO PROBLEM!**  
-> If `MONGODB_URI` is left blank, the server automatically boots into **Local Database Fallback** using a JSON file state manager.  
-> If `OPENAI_API_KEY` is left blank, the AI Evaluator and AI Mentor boot into **Heuristic Fallback**, which evaluates logical steps for the 9 core questions using smart sequential checkers and keyword matching.
 
-### 3. Launch Development Server
+### 2. Configure Frontend Environment
+Inside the `frontend/.env` file, configure your settings:
+```env
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+### 3. Start Development Server
 In the root directory, run:
 ```bash
 npm run dev
 ```
-This spins up the Express server on port `5000` and the Vite client on port `5173` concurrently.
+This command runs both servers concurrently:
+*   **Vite Frontend**: Starts on `http://localhost:5174` (configured in `vite.config.js` to match Google Console Authorized Origins).
+*   **Java Spring Boot Backend**: Starts on `http://localhost:5000` (executed via the NetBeans Maven helper batch script `run_backend.cmd`).
 
 ---
 
 ## 🌌 Tech Stack
-- **Frontend**: Vite, React, Tailwind CSS (v3), Framer Motion, Recharts, Lucide Icons.
-- **Backend**: Node.js, Express.js, Mongoose.
-- **Database**: MongoDB (with automated JSON Fallback).
-- **AI Suite**: OpenAI Node SDK.
+*   **Frontend**: React, Vite (port 5174), Tailwind CSS, Framer Motion, Lucide Icons.
+*   **Backend**: Java 17+, Spring Boot (port 5000), Maven.
+*   **Database**: MongoDB (with local JSON fallback `db_fallback.json` if MongoDB is unreachable).
+*   **AI Suite**: Google Gemini API (`GEMINI_API_KEY`) used for evaluating logic and guiding chat queries.
+*   **Auth**: Google Identity Services OAuth (Client ID).
+
+---
+
+## ☁️ Deployment Guide (Render)
+To deploy this project to Render:
+1. Create a new **Web Service** on Render and connect your GitHub repository.
+2. Choose **Docker** as the Language runtime.
+3. Keep the **Branch** as `main`.
+4. In the **Advanced Settings**:
+   *   **Root Directory**: Keep it blank (Render will build from the root using the root-level `Dockerfile` which references the `backend` folder).
+   *   Add the following **Environment Variables**:
+       *   `PORT` = `5000`
+       *   `GEMINI_API_KEY` = `your-gemini-api-key`
+       *   `JWT_SECRET` = `your-jwt-secret-string`
+       *   `MONGODB_URI` = `your-production-mongodb-connection-string` (Atlas recommended)
