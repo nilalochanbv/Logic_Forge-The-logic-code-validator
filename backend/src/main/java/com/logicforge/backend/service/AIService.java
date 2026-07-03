@@ -74,45 +74,57 @@ public class AIService {
         }
     }
 
-    private String callGemini(String systemInstruction, String userPrompt, boolean jsonMode, double temperature) {
-        try {
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+    private String executeGeminiRequest(String modelName, String systemInstruction, String userPrompt, boolean jsonMode, double temperature) throws Exception {
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent?key=" + apiKey;
 
-            // System Instruction
+        // User Prompt
+        Map<String, Object> userPart = Map.of("text", userPrompt);
+        Map<String, Object> contentMap = Map.of(
+            "role", "user",
+            "parts", List.of(userPart)
+        );
+
+        // Request body
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("contents", List.of(contentMap));
+
+        if (systemInstruction != null) {
             Map<String, Object> systemPart = Map.of("text", systemInstruction);
             Map<String, Object> systemInstructionMap = Map.of("parts", List.of(systemPart));
-
-            // User Prompt
-            Map<String, Object> userPart = Map.of("text", userPrompt);
-            Map<String, Object> contentMap = Map.of(
-                "role", "user",
-                "parts", List.of(userPart)
-            );
-
-            // Request body
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("contents", List.of(contentMap));
             requestBody.put("systemInstruction", systemInstructionMap);
+        }
 
-            // Generation config
-            Map<String, Object> generationConfig = new HashMap<>();
-            generationConfig.put("temperature", temperature);
-            if (jsonMode) {
-                generationConfig.put("responseMimeType", "application/json");
+        // Generation config
+        Map<String, Object> generationConfig = new HashMap<>();
+        generationConfig.put("temperature", temperature);
+        if (jsonMode) {
+            generationConfig.put("responseMimeType", "application/json");
+        }
+        requestBody.put("generationConfig", generationConfig);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        String response = restTemplate.postForObject(url, entity, String.class);
+
+        JsonNode rootNode = objectMapper.readTree(response);
+        return rootNode.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
+    }
+
+    private String callGemini(String systemInstruction, String userPrompt, boolean jsonMode, double temperature) {
+        try {
+            return executeGeminiRequest("gemini-1.5-flash", systemInstruction, userPrompt, jsonMode, temperature);
+        } catch (Exception e1) {
+            System.err.println("Gemini 1.5 Flash request failed: " + e1.getMessage());
+            try {
+                System.out.println("Attempting fallback to gemini-pro...");
+                String blendedPrompt = "System Instruction:\n" + systemInstruction + "\n\nUser Input:\n" + userPrompt;
+                return executeGeminiRequest("gemini-pro", null, blendedPrompt, jsonMode, temperature);
+            } catch (Exception e2) {
+                System.err.println("Gemini pro fallback request failed: " + e2.getMessage());
+                throw new RuntimeException(e2);
             }
-            requestBody.put("generationConfig", generationConfig);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            String response = restTemplate.postForObject(url, entity, String.class);
-
-            JsonNode rootNode = objectMapper.readTree(response);
-            return rootNode.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
-        } catch (Exception e) {
-            System.err.println("Gemini API call failed: " + e.getMessage());
-            throw new RuntimeException(e);
         }
     }
 
